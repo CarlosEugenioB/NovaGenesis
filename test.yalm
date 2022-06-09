@@ -29,7 +29,7 @@ sepec:
             key: org
             operator: Equal
             value: inatel
-------
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -68,7 +68,7 @@ sepec:
             key: org
             operator: Equal
             value: inatel
-------
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:

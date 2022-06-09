@@ -1,0 +1,113 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deploy-inatel-ng-nrncs
+  namespace: fibre-inatel
+spec:
+ selector:
+    matchLabels:
+      app: ng-nrncs
+ replicas: 1
+ template:
+  metadata:
+    labels:
+      app: ng-nrncs
+  spec:
+    containers:
+    - name: Core0
+      image: docker.io/carlosbenicio/ng-nrncs:latest
+      command:      
+      - 
+      imagePullPolicy: IfNotPresent   
+      securityContext:
+      privileged: true
+          restartPolicy: Always
+          nodeSelector:
+            kubernetes.io/hostname: inatel-edge1
+          tolerations:
+          - effect: NoSchedule
+            key: org
+            operator: Equal
+            value: inatel
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deploy-inatel-ng-contentapp-repository
+  namespace: fibre-inatel
+spec:
+  selector:
+    matchLabels:
+      app: ng-contentapp-repository
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: ng-contentapp-repository
+    spec:
+      containers:
+      - name: Repository
+        image: docker.io/carlosbenicio/ng-contentapp:latest
+        command:
+        - mkdir home/ng/workspace/novagenesis/IO/Repository
+        - chmod -R 777 home/ng/workspace/novagenesis/IO/Repository
+        - cp /home/ng/workspace/novagenesis/Scripts/Docker/Includes-ContentApp/App.ini /home/ng/workspace/novagenesis/IO/Repository/
+        imagePullPolicy: IfNotPresent
+        securityContext:
+        privileged: true
+        env:
+        - name: CA_PATH
+          value: "/home/ng/workspace/novagenesis/IO/Repository/"
+        - name: CA_TYPE
+          value: "Repository"
+      restartPolicy: Always
+      nodeSelector:
+        kubernetes.io/hostname: inatel-edge1
+      tolerations:
+      - effect: NoSchedule
+        key: org
+        operator: Equal
+        value: inatel
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deploy-inatel-ng-contentapp-source
+  namespace: fibre-inatel
+spec:
+  selector:
+    matchLabels:
+      app: ng-contentapp-source
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: ng-contentapp-source
+    spec:
+      containers:
+    -   name: Source
+        image: docker.io/carlosbenicio/ng-contentapp:latest
+        command:
+        - mkdir home/ng/workspace/novagenesis/IO/Source
+        - chmod -R 777 home/ng/workspace/novagenesis/IO/Source
+        - cp /home/ng/workspace/novagenesis/Scripts/Docker/Includes-ContentApp/App.ini /home/ng/workspace/novagenesis/IO/Source/
+        - cp /home/ng/workspace/novagenesis/Scripts/Docker/Includes-ContentApp/make-photos.sh /home/ng/workspace/novagenesis/IO/Source/
+        - cp /home/ng/workspace/novagenesis/Scripts/Docker/Includes-ContentApp/image_generator /home/ng/workspace/novagenesis/IO/Source/
+        - sleep 10          
+        - sh make-photos.sh 100 50 50 # Amount of photos, width and height of the photos to be created
+        imagePullPolicy: IfNotPresent
+        securityContext:
+        privileged: true
+        env:
+        - name: CA_PATH
+        value: "/home/ng/workspace/novagenesis/IO/Source/"
+        - name: CA_TYPE
+        value: "Source"
+     restartPolicy: Always
+     nodeSelector:
+       kubernetes.io/hostname: inatel-edge1
+     tolerations:
+     - effect: NoSchedule
+       key: org
+       operator: Equal
+       value: inatel

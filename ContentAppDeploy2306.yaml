@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deploy-inatel-ng-nrncs
+
+spec:
+  selector:
+    matchLabels:
+      app: ng-nrncs
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: ng-nrncs
+    spec:
+      containers:
+      - name: core0
+        image: docker.io/carlosbenicio/ng-nrncs:latest
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          privileged: true
+      - name: repository
+        image: docker.io/antonioalberti/ng-contentapp:june2022
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          privileged: true
+        env:
+        - name: CA_PATH
+          value: "/home/ng/workspace/novagenesis/IO/Repository/"
+        - name: CA_TYPE
+          value: "Repository"
+        command: ["/bin/bash", "-c"]
+        args:
+        - sleep 30;
+          cd /home/ng/workspace/novagenesis/IO/;
+          mkdir /home/ng/workspace/novagenesis/IO/Repository;
+          chmod -R 777 /home/ng/workspace/novagenesis/IO/Repository/;
+          cp /home/ng/workspace/novagenesis/Scripts/Docker/Includes-ContentApp/App.ini /home/ng/workspace/novagenesis/IO/Repository/;
+          sleep 10;
+          cd /;
+          ./Run.sh;
+      - name: source
+        image: docker.io/antonioalberti/ng-contentapp:june2022
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          privileged: true
+        env:
+        - name: CA_PATH
+          value: "/home/ng/workspace/novagenesis/IO/Source/"
+        - name: CA_TYPE
+          value: "Source"
+        command: ["/bin/bash", "-c"]
+        args:
+        - sleep 30;
+          cd /home/ng/workspace/novagenesis/IO/;
+          mkdir Source;
+          chmod -R 777 /home/ng/workspace/novagenesis/IO/Source;
+          cp /home/ng/workspace/novagenesis/Scripts/Docker/Includes-ContentApp/App.ini /home/ng/workspace/novagenesis/IO/Source/;
+          cp /home/ng/workspace/novagenesis/Scripts/Docker/Includes-ContentApp/make-photos.sh /home/ng/workspace/novagenesis/IO/Source/;
+          cp /home/ng/workspace/novagenesis/Scripts/Docker/Includes-ContentApp/image_generator /home/ng/workspace/novagenesis/IO/Source/;
+          sleep 10;
+          cd /home/ng/workspace/novagenesis/IO/Source/;
+          ./make-photos.sh 100 50 50;
+          cd /;
+          ./Run.sh;
+      restartPolicy: Always
+      nodeSelector:
+        kubernetes.io/hostname: inatel-edge1

@@ -1,90 +1,49 @@
 apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: deploy02-ufba-centos7
+kind: Deployment 
+metadata: 
+  name: deploy02-inatel-centos7
+  namespace: fibre-ng
 spec:
   selector:
     matchLabels:
-      app: ng-nrncs
+      app: centos7
   replicas: 1
   template:
     metadata:
       labels:
-        app: ng-nrncs
+        app: centos7
     spec:
       containers:
-      - name: core0
-        image: docker.io/carlosbenicio/ng-nrncs:latest
+      - name: centos7
+        image: docker.io/centos/tools:latest
+        command:
+        - /sbin/init
         imagePullPolicy: IfNotPresent
-        securityContext:
-          privileged: true
       restartPolicy: Always
+      nodeSelector:
+        kubernetes.io/hostname: inatel-edge1
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: deploy-inatel-ng-contentapp-repository
+  name: deploy02-ufba-centos7
+  namespace: fibre-ng
 spec:
   selector:
     matchLabels:
-      app: ng-contentapp-repository
-  replicas: 2
+      app: centos7
+  replicas: 1
   template:
-    metadata:
+    matadata:
       labels:
-        app: ng-contentapp-repository
-    spec:
-      containers:
-      - name: repository
-        image: docker.io/carlosbenicio/ng-contentapp:latest
-        imagePullPolicy: IfNotPresent
-        securityContext:
-          privileged: true
-        env:
-        - name: CA_PATH
-          value: "/home/ng/workspace/novagenesis/IO/Repository/"
-        - name: CA_TYPE
-          value: "Repository"
-        command:
-        - cd /home/ng/workspace/novagenesis/IO/
-        - mkdir /home/ng/workspace/novagenesis/IO/Repository
-        - chmod -R 777 /home/ng/workspace/novagenesis/IO/Repository/
-        - cp /home/ng/workspace/novagenesis/Scripts/Docker/Includes-ContentApp/App.ini /home/ng/workspace/novagenesis/IO/Repository/
-      restartPolicy: Always
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: deploy-inatel-ng-contentapp-source
-spec:
-  selector:
-    matchLabels:
-      app: ng-contentapp-source
-  replicas: 2
-  template:
-    metadata:
-      labels:
-        app: ng-contentapp-source
-    spec:
-      containers:
-      - name: source
-        image: docker.io/carlosbenicio/ng-contentapp:latest
-        imagePullPolicy: IfNotPresent
-        securityContext:
-          privileged: true
-        env:
-        - name: CA_PATH
-          value: "/home/ng/workspace/novagenesis/IO/Source/"
-        - name: CA_TYPE
-          value: "Source"
-        command:
-        - cd /home/ng/workspace/novagenesis/IO/
-        - mkdir Source
-        - chmod -R 777 /home/ng/workspace/novagenesis/IO/Source
-        - cp /home/ng/workspace/novagenesis/Scripts/Docker/Includes-ContentApp/App.ini /home/ng/workspace/novagenesis/IO/Source/
-        - cp /home/ng/workspace/novagenesis/Scripts/Docker/Includes-ContentApp/make-photos.sh /home/ng/workspace/novagenesis/IO/Source/
-        - cp /home/ng/workspace/novagenesis/Scripts/Docker/Includes-ContentApp/image_generator /home/ng/workspace/novagenesis/IO/Source/
-        - sleep 10
-        - cd /home/ng/workspace/novagenesis/IO/Source/
-        - ./make-photos.sh 100 50 50
-      restartPolicy: Always
+        app: centos7
+      spec:
+        containers:
+        - name: centos7
+          image: docker.io/centos/tools:latest
+          command:
+          - /sbin/init
+          imagePullPolicy: IfNotPresent
+        restartPolicy: Always
+        nodeSelector:
+          kubernetes.io/hostname: ufba-edge1
